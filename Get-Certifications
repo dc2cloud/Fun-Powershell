@@ -1,0 +1,8 @@
+function Get-Certifications {
+Write-Host `n '  Certifications' `n -ForegroundColor Yellow
+$yourclaim = Invoke-WebRequest https://www.youracclaim.com/users/mohdfawazakhtar -UseBasicParsing
+$certs = $yourclaim.Links.title
+$dot = Write-Output ' •  '
+foreach ($cert in $certs) { $cert = $dot + $cert
+$cert | ? {$_ -ne $dot} }
+}
