@@ -1,0 +1,71 @@
+<#
+        Script Name	: Powershell Profile (Prompt)
+        Description	: This script customize the powershell prompt
+        Author		: Mohd. Fawaz Akhtar
+
+        Requires Powershell Version 2 and above
+        Contribution : https://melcher.dev/2019/03/powershell-prompt-awesomeness-you-need-this/
+
+        1) Test-Path $Profile (If False) (If True - Step -3)
+        2) New-Item –Path $Profile –Type File –Force
+        3) notepad $Profile
+#>
+$Email = 'mohdfawaz.akhtar@gmail.com'
+function prompt {
+      $host.ui.RawUI.WindowTitle = $(Get-Location)
+function Get-ExecutionTime {    
+try {        
+        $history = Get-History -ErrorAction Ignore -Count 1
+        if ($history) {
+            Write-Host "[" -NoNewline
+            $ts = New-TimeSpan $history.StartExecutionTime $history.EndExecutionTime
+            switch ($ts) {
+                {$_.TotalSeconds -lt 1} { 
+                    [int]$d = $_.TotalMilliseconds
+                    '{0}ms' -f ($d) | Write-Host -ForegroundColor Yellow -NoNewline -BackgroundColor DarkGreen
+                    break
+                }
+                {$_.totalminutes -lt 1} { 
+                    [int]$d = $_.TotalSeconds
+                    '{0}s' -f ($d) | Write-Host -ForegroundColor Black -NoNewline -BackgroundColor DarkYellow
+                    break
+                }
+                {$_.totalminutes -ge 1} { 
+                    "{0:HH:mm:ss}" -f ([datetime]$ts.Ticks) | Write-Host -ForegroundColor Gray -NoNewline  -BackgroundColor Red
+                    break
+                }
+            }
+            Write-Host "] " -NoNewline
+            }
+}
+catch { }
+}
+      $dateTime = get-date -Format "dd.MM.yyyy HH:mm"
+      $dateTimeD = get-date -Format "dd"
+      $dateTimeCSTD = Get-Date((get-date ).AddHours(-11.5))  -Format "dd"
+           if($dateTimeCSTD -lt $dateTimeD){
+              $dateTimeCSTD = Get-Date((get-date ).AddHours(-11.5))  -Format "HH:mm"
+              $dateTimeCST = $dateTimeCSTD + " (Yesterday)" + " CST"
+              } else{
+              $dateTimeCST = Get-Date((get-date ).AddHours(-11.5))  -Format "HH:mm"
+              $dateTimeCST = $dateTimeCST + " CST"
+              }
+    $currentDirectory = $(Get-Location)
+    $UncRoot = $currentDirectory.Drive.DisplayRoot
+    $Outlook = New-Object -comobject Outlook.Application
+    $namespace = $Outlook.GetNameSpace("MAPI")
+    $Unread = ($namespace.Folders.Item($Email).Folders.Item('Inbox')).UnReadItemCount
+
+    write-host "$(Get-ExecutionTime) | $dateTime IST | $dateTimeCST | $Unread" -NoNewline -ForegroundColor Yellow
+    write-host " $UncRoot" -ForegroundColor Magenta
+    # Convert-Path needed for pure UNC-locations
+        if (($pwd.Path.Split('\').count -gt 2)){
+        $Dir = "$($pwd.path.split('\')[-2], $pwd.path.split('\')[-1] -join ('\'))"
+        Write-host $Dir ">" -NoNewline -ForegroundColor Cyan
+    }
+    else{
+        Write-Host "$($pwd.path)" -NoNewline
+    }
+    #write-host "PS $(Convert-Path $currentDirectory)>" -NoNewline -ForegroundColor Cyan
+    return " "
+}
